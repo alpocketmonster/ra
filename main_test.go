@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/rs/zerolog"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,7 +27,7 @@ func TestAuthRequest(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/auth", nil)
 	req.Header.Set("Content-Type", "application/vnd.kafka.binary.v2+json; charset=utf-8")
 	req.Header.Set("X-Real-Ip", "10.48.5.59")
-	req.Header.Set("X-Original-Uri", "000-0.sap-erp.db.operations.orders05.0")
+	req.Header.Set("X-Original-Uri", "/topics/000-0.sap-erp.db.operations.orders05.0")
 	req.Header.Set("X-Original-Method", "POST")
 	req.Header.Set("X-Service", "kafka-rest")
 	req.Header.Set("Authorization", "Basic c2FwOnNlQzIzc0JGanV0azg5TnY=")
@@ -45,7 +46,7 @@ func TestBadRequest(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/auth", nil)
 	req.Header.Set("Content-Type", "application/vnd.kafka.binary.v2+json")
 	req.Header.Set("X-Real-Ip", "10.48.5.59")
-	req.Header.Set("X-Original-Uri", "000-1.sap-erp.db.operations.orders05.0")
+	req.Header.Set("X-Original-Uri", "/topics/000-1.sap-erp.db.operations.orders05.0")
 	req.Header.Set("X-Original-Method", "POST")
 	req.Header.Set("X-Service", "kafka-rest")
 	req.Header.Set("Authorization", "Basic c2FwOnNlQzIzc0JGanV0azg5TnY=")
@@ -94,6 +95,8 @@ func TestSchemaRegistryDeny(t *testing.T) {
 }
 
 func BenchmarkAuthRequest(b *testing.B) {
+	zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+
 	router := testGetAuthServer()
 	assert.NotNilf(b, router, "Error init router")
 
@@ -102,7 +105,7 @@ func BenchmarkAuthRequest(b *testing.B) {
 	req, _ := http.NewRequest("POST", "/auth", strings.NewReader("adfadsf"))
 	req.Header.Set("Content-Type", "application/vnd.kafka.binary.v2+json")
 	req.Header.Set("X-Real-Ip", "10.48.5.59")
-	req.Header.Set("X-Original-Uri", "000-0.sap-erp.db.operations.orders05.0")
+	req.Header.Set("X-Original-Uri", "/topics/000-0.sap-erp.db.operations.orders05.0")
 	req.Header.Set("X-Original-Method", "POST")
 	req.Header.Set("X-Service", "kafka-rest")
 	req.Header.Set("Authorization", "Basic c2FwOnNlQzIzc0JGanV0azg5TnY=")

@@ -2,8 +2,6 @@ package main
 
 import (
 	"net/http"
-	"net/http/httptest"
-	"testing"
 
 	ginlogrus "github.com/e11it/ra/ginlogrus"
 	"github.com/e11it/ra/internal/app/ra"
@@ -11,25 +9,25 @@ import (
 )
 
 // Helper function to process a request and test its response
-func testHTTPResponse(t *testing.T, r *gin.Engine, req *http.Request, f func(w *httptest.ResponseRecorder) bool) {
-	// Create a response recorder
-	w := httptest.NewRecorder()
+// func testHTTPResponse(t *testing.T, r *gin.Engine, req *http.Request, f func(w *httptest.ResponseRecorder) bool) {
+// 	// Create a response recorder
+// 	w := httptest.NewRecorder()
 
-	// Create the service and process the above request.
-	r.ServeHTTP(w, req)
+// 	// Create the service and process the above request.
+// 	r.ServeHTTP(w, req)
 
-	if !f(w) {
-		t.Fail()
-	}
-}
+// 	if !f(w) {
+// 		t.Fail()
+// 	}
+// }
 
-func testMiddlewareRequest(t *testing.T, r *gin.Engine, expectedHTTPCode int) {
-	req, _ := http.NewRequest("GET", "/", nil)
+// func testMiddlewareRequest(t *testing.T, r *gin.Engine, expectedHTTPCode int) {
+// 	req, _ := http.NewRequest("GET", "/", nil)
 
-	testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
-		return w.Code == expectedHTTPCode
-	})
-}
+// 	testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
+// 		return w.Code == expectedHTTPCode
+// 	})
+// }
 
 func createTestingAuthRouter(path string) *gin.Engine {
 	newRa, err := ra.NewRA(getEnv("RA_CONFIG_FILE", path))

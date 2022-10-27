@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 // 2016-09-27 09:38:21.541541811 +0200 CEST
@@ -35,6 +35,11 @@ func Logger(notLogged ...string) gin.HandlerFunc {
 	}
 
 	return func(c *gin.Context) {
+
+		//log := zerolog.New(os.Stderr).With().Timestamp().Logger()
+
+		log.Debug().Str("foo", "bar").Msg("Hello World")
+
 		// other handler can change c.Path so:
 		path := c.Request.URL.Path
 		start := time.Now()
@@ -54,29 +59,41 @@ func Logger(notLogged ...string) gin.HandlerFunc {
 			return
 		}
 
-		entry := log.WithFields(log.Fields{
-			"hostname":   hostname,
-			"statusCode": statusCode,
-			"latency":    latency, // time to process
-			"clientIP":   clientIP,
-			"method":     c.Request.Method,
-			"path":       path,
-			"referer":    referer,
-			"dataLength": dataLength,
-			"userAgent":  clientUserAgent,
-		})
+		// entry := log.WithFields(log.Fields{
+		// 	"hostname": hostname,
+		// 	"statusCode": statusCode,
+		// 	"latency":    latency, // time to process
+		// 	"clientIP":   clientIP,
+		// 	"method": c.Request.Method,
+		// 	"path":       path,
+		// 	"referer":    referer,
+		// 	"dataLength": dataLength,
+		// 	"userAgent":  clientUserAgent,
+		// })
 
+		entry := log.With().
+			Str("component", "foo").
+			Str("hostname", hostname).
+			Int("statusCode", statusCode).
+			Float64("latency", latency). // time to process
+			Str("clientIP", clientIP).
+			Str("method", c.Request.Method).
+			Str("path", path).
+			Str("referer", referer).
+			Int("dataLength", dataLength).
+			Str("userAgent", clientUserAgent).
+			Logger()
 
 		if len(c.Errors) > 0 {
-			entry.Error(c.Errors.ByType(gin.ErrorTypePrivate).String())
+			entry.Error().Msg(c.Errors.ByType(gin.ErrorTypePrivate).String())
 		} else {
 			//msg := fmt.Sprintf("%s - %s [%s] \"%s %s\" %d %d \"%s\" \"%s\" (%dms)", clientIP, hostname, time.Now().Format(timeFormat), c.Request.Method, path, statusCode, dataLength, referer, clientUserAgent, latency)
 			if statusCode >= http.StatusInternalServerError {
-				entry.Error()
+				entry.Error().Send()
 			} else if statusCode >= http.StatusBadRequest {
-				entry.Warn()
+				entry.Warn().Send()
 			} else {
-				entry.Info()
+				entry.Info().Send()
 			}
 		}
 	}

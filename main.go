@@ -10,21 +10,20 @@ import (
 
 	ginlogrus "github.com/e11it/ra/ginlogrus"
 	"github.com/e11it/ra/internal/app/ra"
-	"github.com/e11it/ra/pkg/auth"
 	"github.com/gin-gonic/gin"
 
 	log "github.com/sirupsen/logrus"
 )
 
-type config struct {
-	APPName  string `default:"app name"`
-	Addr     string `default:":8080"`
-	LogLevel string `default:""`
+// type config struct {
+// 	APPName  string `default:"app name"`
+// 	Addr     string `default:":8080"`
+// 	LogLevel string `default:""`
 
-	Auth auth.Config
+// 	Auth auth.Config
 
-	ShutdownTimeout uint `default:"5"`
-}
+// 	ShutdownTimeout uint `default:"5"`
+// }
 
 func init() {
 	// log.SetFormatter(&log.JSONFormatter{})
@@ -62,6 +61,10 @@ func main() {
 	router.Use(ra.GetAuthMiddlerware())
 	router.GET("/auth", func(c *gin.Context) {
 		c.String(http.StatusOK, "Auth")
+	})
+	router.GET("/reload", func(c *gin.Context) {
+		ra.ReloadHandler()
+		c.String(http.StatusOK, "Reload config")
 	})
 
 	srv := &http.Server{
