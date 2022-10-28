@@ -22,12 +22,13 @@ type Ra struct {
 	monitor *ginmetrics.Monitor
 }
 
-func NewRA(configPath string) (*Ra, error) {
+func NewRA(configPath string, monitor *ginmetrics.Monitor) (*Ra, error) {
 	var (
 		ra  *Ra
 		err error
 	)
 	ra = new(Ra)
+	ra.monitor = monitor
 	ra.cfgPath, err = filepath.NewFileWithChecksum(configPath)
 	if err != nil {
 		return nil, err
@@ -49,10 +50,6 @@ func (ra *Ra) GetServerAddr() string {
 
 func (ra *Ra) GetShutdownTimeout() uint {
 	return ra.config.ShutdownTimeout
-}
-
-func (ra *Ra) SetMetricsMonitor(monitor *ginmetrics.Monitor) {
-	ra.monitor = monitor
 }
 
 func (ra *Ra) loadConfig() (*Config, error) {

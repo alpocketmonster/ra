@@ -52,16 +52,15 @@ func createAuthRouter(auth_m Authorizer) (*gin.Engine, error) {
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
-	ra, err := ra.NewRA(getEnv("RA_CONFIG_FILE", "example/config.yml"))
+	monitor := metrics.NewMonitor()
+	ra, err := ra.NewRA(getEnv("RA_CONFIG_FILE", "example/config.yml"), monitor)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	router := gin.New()
 
 	// Add handler for /metrics and create metrics
-	monitor := metrics.NewMonitor()
 	monitor.Use(router)
-	ra.SetMetricsMonitor(monitor)
 
 	router.Use(loghandler.Logger(), gin.Recovery())
 	// router.Use(helpers.DebugLogger())

@@ -66,4 +66,5 @@ func (m *metrics) makeMetrics() {
 		Labels:      nil,
 	}
 	_ = m.monitor.AddMetric(&readCache)
+
 }

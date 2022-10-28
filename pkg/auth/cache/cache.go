@@ -1,8 +1,6 @@
 package cache
 
 import (
-	"log"
-
 	"github.com/e11it/ra/pkg/auth"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/penglongli/gin-metrics/ginmetrics"
@@ -33,8 +31,7 @@ func (a *AccessControllerWithCache) Validate(authRequest *auth.AuthRequest) erro
 	if err, ok := a.cache.Get(*authRequest); ok {
 
 		if a.monitor != nil {
-			log.Println("I am here!!!")
-			a.monitor.GetMetric("requests_total").Inc([]string{"fs", "fds"})
+			a.monitor.GetMetric("read_cache").Inc(nil)
 		}
 		if err == nil {
 			return nil
