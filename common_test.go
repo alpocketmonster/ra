@@ -3,9 +3,10 @@ package main
 import (
 	"net/http"
 
-	ginlogrus "github.com/e11it/ra/ginlogrus"
 	"github.com/e11it/ra/internal/app/ra"
+	loghandler "github.com/e11it/ra/loghandler"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 )
 
 // Helper function to process a request and test its response
@@ -30,13 +31,15 @@ import (
 // }
 
 func createTestingAuthRouter(path string) *gin.Engine {
+	zerolog.SetGlobalLevel(zerolog.FatalLevel)
+
 	newRa, err := ra.NewRA(getEnv("RA_CONFIG_FILE", path))
 	if err != nil {
 		return nil
 	}
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
-	router.Use(ginlogrus.Logger(), gin.Recovery())
+	router.Use(loghandler.Logger(), gin.Recovery())
 
 	router.Use(newRa.GetAuthMiddlerware())
 	router.GET("/auth", func(c *gin.Context) {

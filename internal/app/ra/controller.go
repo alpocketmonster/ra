@@ -6,6 +6,7 @@ import (
 	"github.com/e11it/ra/pkg/auth"
 	"github.com/e11it/ra/pkg/auth/cache"
 	"github.com/e11it/ra/pkg/filepath"
+	"github.com/penglongli/gin-metrics/ginmetrics"
 
 	"github.com/jinzhu/configor"
 )
@@ -17,6 +18,8 @@ type Ra struct {
 	config  *Config
 
 	auth auth.AccessController
+
+	monitor *ginmetrics.Monitor
 }
 
 func NewRA(configPath string) (*Ra, error) {
@@ -48,6 +51,10 @@ func (ra *Ra) GetShutdownTimeout() uint {
 	return ra.config.ShutdownTimeout
 }
 
+func (ra *Ra) SetMetricsMonitor(monitor *ginmetrics.Monitor) {
+	ra.monitor = monitor
+}
+
 func (ra *Ra) loadConfig() (*Config, error) {
 	cfg := new(Config)
 	err := configor.New(
@@ -62,7 +69,7 @@ func (ra *Ra) loadConfig() (*Config, error) {
 func (ra *Ra) createAccessController(config *Config) (err error) {
 	if config.Cache.Enabled {
 		// Инициализируем контроллер с кешом
-		ra.auth, err = cache.NewAclWichCache(&config.Auth, config.Cache.CacheSize)
+		ra.auth, err = cache.NewAclWichCache(&config.Auth, config.Cache.CacheSize, ra.monitor)
 		return
 	}
 	ra.auth, err = auth.NewSimpleAccessController(&ra.config.Auth)

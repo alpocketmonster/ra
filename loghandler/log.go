@@ -1,4 +1,4 @@
-package ginlogrus
+package loghandler
 
 import (
 	"net/http"
@@ -15,7 +15,7 @@ import (
 // "http://www.example.com/start.html"
 // "Mozilla/4.08 [en] (Win98; I ;Nav)"
 
-var timeFormat = "02/Jan/2006:15:04:05 -0700"
+//var timeFormat = "02/Jan/2006:15:04:05 -0700"
 
 // Logger is the logrus logger handler
 func Logger(notLogged ...string) gin.HandlerFunc {
@@ -35,11 +35,6 @@ func Logger(notLogged ...string) gin.HandlerFunc {
 	}
 
 	return func(c *gin.Context) {
-
-		//log := zerolog.New(os.Stderr).With().Timestamp().Logger()
-
-		log.Debug().Str("foo", "bar").Msg("Hello World")
-
 		// other handler can change c.Path so:
 		path := c.Request.URL.Path
 		start := time.Now()
@@ -72,7 +67,6 @@ func Logger(notLogged ...string) gin.HandlerFunc {
 		// })
 
 		entry := log.With().
-			Str("component", "foo").
 			Str("hostname", hostname).
 			Int("statusCode", statusCode).
 			Float64("latency", latency). // time to process

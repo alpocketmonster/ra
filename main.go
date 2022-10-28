@@ -8,8 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	ginlogrus "github.com/e11it/ra/ginlogrus"
 	"github.com/e11it/ra/internal/app/ra"
+	loghandler "github.com/e11it/ra/loghandler"
+	"github.com/e11it/ra/metrics"
 	"github.com/gin-gonic/gin"
 
 	log "github.com/sirupsen/logrus"
@@ -38,7 +39,7 @@ type Authorizer interface {
 func createAuthRouter(auth_m Authorizer) (*gin.Engine, error) {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
-	router.Use(ginlogrus.Logger(), gin.Recovery())
+	router.Use(loghandler.Logger(), gin.Recovery())
 	// router.Use(helpers.DebugLogger())
 
 	router.Use(auth_m.GetMiddleware())
@@ -49,22 +50,36 @@ func createAuthRouter(auth_m Authorizer) (*gin.Engine, error) {
 }*/
 
 func main() {
-	ra, err := ra.NewRA(getEnv("RA_CONFIG_FILE", "config.yml"))
+	gin.SetMode(gin.ReleaseMode)
+
+	ra, err := ra.NewRA(getEnv("RA_CONFIG_FILE", "example/config.yml"))
 	if err != nil {
 		log.Fatalln(err)
 	}
-	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
-	router.Use(ginlogrus.Logger(), gin.Recovery())
+
+	// Add handler for /metrics and create metrics
+	monitor := metrics.NewMonitor()
+	monitor.Use(router)
+	ra.SetMetricsMonitor(monitor)
+
+	router.Use(loghandler.Logger(), gin.Recovery())
 	// router.Use(helpers.DebugLogger())
 
-	router.Use(ra.GetAuthMiddlerware())
-	router.GET("/auth", func(c *gin.Context) {
+	//router.Use(metrics.Handler())
+	// router.GET("/metrics", func(c *gin.Context) {
+	// 	promhttp.Handler().ServeHTTP(c.Writer, c.Request)
+	// })
+	router.GET("/auth", ra.GetAuthMiddlerware(), func(c *gin.Context) {
 		c.String(http.StatusOK, "Auth")
 	})
 	router.GET("/reload", func(c *gin.Context) {
-		ra.ReloadHandler()
-		c.String(http.StatusOK, "Reload config")
+		if err := ra.ReloadHandler(); err != nil {
+			c.AbortWithError(http.StatusBadGateway, err)
+			return
+		}
+
+		c.String(http.StatusOK, "Reload")
 	})
 
 	srv := &http.Server{

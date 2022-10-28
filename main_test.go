@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rs/zerolog"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -95,8 +94,6 @@ func TestSchemaRegistryDeny(t *testing.T) {
 }
 
 func BenchmarkAuthRequest(b *testing.B) {
-	zerolog.SetGlobalLevel(zerolog.ErrorLevel)
-
 	router := testGetAuthServer()
 	assert.NotNilf(b, router, "Error init router")
 
